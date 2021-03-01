@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Course} from '../model/course';
-import {Observable, of} from 'rxjs';
-import {catchError, map, shareReplay} from 'rxjs/operators';
+import {Observable, throwError} from 'rxjs';
+import {catchError, finalize, map, shareReplay} from 'rxjs/operators';
 import {createHttpObservable} from '../common/util';
 
 @Component({
@@ -19,9 +19,13 @@ export class HomeComponent implements OnInit {
     const http$ = createHttpObservable('/api/courses');
     const courses$: Observable<Course[]> = http$
       .pipe(
+        catchError(err => {
+          console.log('Error occurred: ', err);
+          return throwError(err);
+        }),
+        finalize(() => console.log('finalize')),
         map(res => Object.values(res['payload']) as Course[]),
         shareReplay(),
-        catchError(() => of([]))
       );
 
     this.beginnerCourses$ = courses$
