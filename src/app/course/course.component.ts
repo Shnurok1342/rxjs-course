@@ -1,10 +1,10 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Course} from '../model/course';
-import {concat, fromEvent, Observable} from 'rxjs';
+import {fromEvent, Observable} from 'rxjs';
 import {Lesson} from '../model/lesson';
 import {createHttpObservable} from '../common/util';
-import {debounceTime, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, map, startWith, switchMap} from 'rxjs/operators';
 
 @Component({
     selector: 'app-course',
@@ -27,15 +27,14 @@ export class CourseComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const initialLessons$ = this.loadLessons();
-    const searchLessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
+    this.lessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
       .pipe(
         map(e => e.target.value),
+        startWith(''),
         debounceTime(400),
         distinctUntilChanged(),
         switchMap(search => this.loadLessons(search))
       );
-    this.lessons$ = concat(initialLessons$, searchLessons$);
   }
 
   loadLessons(search = ''): Observable<Lesson[]> {
