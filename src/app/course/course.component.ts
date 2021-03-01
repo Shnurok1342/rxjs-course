@@ -1,10 +1,10 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Course} from '../model/course';
-import {fromEvent, Observable} from 'rxjs';
+import {concat, fromEvent, Observable} from 'rxjs';
 import {Lesson} from '../model/lesson';
 import {createHttpObservable} from '../common/util';
-import {debounceTime, distinctUntilChanged, map} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 @Component({
     selector: 'app-course',
@@ -15,26 +15,34 @@ export class CourseComponent implements OnInit, AfterViewInit {
   course$: Observable<Course>;
   lessons$: Observable<Lesson[]>;
 
+  courseId: string;
+
   @ViewChild('searchInput', { static: true }) input: ElementRef;
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
-    const courseId = this.route.snapshot.params['id'];
-    this.course$ = createHttpObservable<Course>(`/api/courses/${courseId}`);
-    this.lessons$ = createHttpObservable(`/api/lessons?courseId=${courseId}&pageSize=100`)
-      .pipe(
-        map(res => res['payload'])
-      );
+    this.courseId = this.route.snapshot.params['id'];
+    this.course$ = createHttpObservable<Course>(`/api/courses/${this.courseId}`);
+
   }
 
   ngAfterViewInit() {
-    fromEvent<any>(this.input.nativeElement, 'keyup')
+    const initialLessons$ = this.loadLessons();
+    const searchLessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
       .pipe(
         map(e => e.target.value),
         debounceTime(400),
-        distinctUntilChanged()
-      )
-      .subscribe(console.log);
+        distinctUntilChanged(),
+        switchMap(search => this.loadLessons(search))
+      );
+    this.lessons$ = concat(initialLessons$, searchLessons$);
+  }
+
+  loadLessons(search = ''): Observable<Lesson[]> {
+    return createHttpObservable(`/api/lessons?courseId=${this.courseId}&pageSize=100&filter=${search}`)
+      .pipe(
+        map(res => res['payload'])
+      );
   }
 }
