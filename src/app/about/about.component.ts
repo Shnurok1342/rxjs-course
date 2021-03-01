@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Subject} from 'rxjs';
+import {AsyncSubject, ReplaySubject} from 'rxjs';
 
 @Component({
   selector: 'app-about',
@@ -9,20 +9,35 @@ import {Subject} from 'rxjs';
 export class AboutComponent implements OnInit {
 
   ngOnInit() {
-    const subject = new Subject();
-    const series$ = subject.asObservable();
-    series$.subscribe(val => console.log('early sub: ', +val));
+    const asyncSubject = new AsyncSubject();
+    const replaySubject = new ReplaySubject();
+    const asyncSeries$ = asyncSubject.asObservable();
+    const replaySeries$ = replaySubject.asObservable();
+    asyncSeries$.subscribe(val => console.log('early AsyncSubject sub: ', val));
+    replaySeries$.subscribe(val => console.log('early ReplaySubject sub: ', val));
 
-    subject.next(1);
-    subject.next(2);
-    subject.next(3);
+    asyncSubject.next(1);
+    asyncSubject.next(2);
+    asyncSubject.next(3);
 
-    series$.subscribe(val => console.log('after next sub: ', +val));
+    replaySubject.next(1);
+    replaySubject.next(2);
+    replaySubject.next(3);
 
-    subject.next(4);
+    asyncSeries$.subscribe(val => console.log('after AsyncSubject next sub: ', val));
+    replaySeries$.subscribe(val => console.log('after ReplaySubject next sub: ', val));
 
-    setTimeout(() =>
-        series$.subscribe(val => console.log('late sub: ', +val)),
+    asyncSubject.next(4);
+    replaySubject.next(4);
+
+    asyncSubject.complete();
+    replaySubject.complete();
+
+    setTimeout(() => {
+        asyncSeries$.subscribe(val => console.log('late AsyncSubject sub: ', val));
+        replaySeries$.subscribe(val => console.log('late ReplaySubject sub: ', val));
+      }
+      ,
       3000
     );
   }
