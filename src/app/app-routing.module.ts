@@ -1,17 +1,16 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import {HomeComponent} from "./home/home.component";
-import {AboutComponent} from "./about/about.component";
-import {CourseComponent} from "./course/course.component";
+import {HomeComponent} from './home/home.component';
+import {AboutComponent} from './about/about.component';
+import {CourseComponent} from './course/course.component';
 
 const routes: Routes = [
     {
-        path: "",
+        path: '',
         component: HomeComponent
-
     },
     {
-        path: "about",
+        path: 'about',
         component: AboutComponent
     },
     {
@@ -19,7 +18,7 @@ const routes: Routes = [
         component: CourseComponent
     },
     {
-        path: "**",
+        path: '**',
         redirectTo: '/'
     }
 ];
