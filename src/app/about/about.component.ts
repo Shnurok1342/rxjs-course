@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {createHttpObservable} from '../common/util';
 
 @Component({
   selector: 'app-about',
@@ -9,5 +10,8 @@ export class AboutComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {}
+  ngOnInit() {
+    const sub = createHttpObservable('/api/courses').subscribe();
+    setTimeout(() => sub.unsubscribe(), 0);
+  }
 }
