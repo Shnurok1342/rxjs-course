@@ -10,6 +10,7 @@ import {
 import {fromEvent, Observable, concat} from 'rxjs';
 import {Lesson} from '../model/lesson';
 import {createHttpObservable} from '../common/util';
+import {StoreService} from '../common/store.service';
 
 @Component({
   selector: 'app-course',
@@ -17,18 +18,21 @@ import {createHttpObservable} from '../common/util';
   styleUrls: ['./course.component.css']
 })
 export class CourseComponent implements OnInit, AfterViewInit {
-  courseId: string;
+  courseId: number;
   course$: Observable<Course>;
   lessons$: Observable<Lesson[]>;
 
   @ViewChild('searchInput', {static: true}) input: ElementRef;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(
+    private route: ActivatedRoute,
+    private storeService: StoreService
+  ) {
   }
 
   ngOnInit() {
-    this.courseId = this.route.snapshot.params['id'];
-    this.course$ = createHttpObservable(`/api/courses/${this.courseId}`);
+    this.courseId = Number(this.route.snapshot.params['id'] ?? 0);
+    this.course$ = this.storeService.selectCourseById(this.courseId);
   }
 
   ngAfterViewInit() {
