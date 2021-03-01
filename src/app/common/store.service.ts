@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {Course} from '../model/course';
 import {createHttpObservable} from './util';
-import {map, tap} from 'rxjs/operators';
+import {filter, map, tap} from 'rxjs/operators';
 import {fromPromise} from 'rxjs/internal-compatibility';
 
 @Injectable({
@@ -36,7 +36,8 @@ export class StoreService {
 
   selectCourseById(courseId: number) {
     return this.courses$.pipe(
-      map(courses => courses.find(c => c.id === courseId))
+      map(courses => courses.find(c => c.id === courseId)),
+      filter(course => Boolean(course))
     );
   }
 

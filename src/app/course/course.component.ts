@@ -3,7 +3,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Course} from '../model/course';
 import {
   debounceTime,
-  distinctUntilChanged,
+  distinctUntilChanged, first,
   map,
   switchMap
 } from 'rxjs/operators';
@@ -32,7 +32,10 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.courseId = Number(this.route.snapshot.params['id'] ?? 0);
-    this.course$ = this.storeService.selectCourseById(this.courseId);
+    this.course$ = this.storeService.selectCourseById(this.courseId)
+      .pipe(
+        first()
+      );
   }
 
   ngAfterViewInit() {
